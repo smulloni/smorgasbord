@@ -13,6 +13,7 @@ def _get_start_and_end(source, lineno, pos):
     for n, line in enumerate(source.splitlines()):
         if n==lineno:
             start+=pos
+            break
         else:
             start+=len(line)-1
     return start, start
