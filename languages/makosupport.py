@@ -42,7 +42,13 @@ class MakoTemplate(object):
         self.origin=origin
 
     def render(self, context):
-        return self.template_obj.render_unicode(**context_to_dict(context))
+        try:
+            return self.template_obj.render_unicode(**context_to_dict(context))
+        except MakoException, me:
+            if hasattr(me, 'source'):
+                raise MakoExceptionWrapper(me, self.origin)
+            else:
+                raise me
 
 def get_template_from_string(source, origin=None, name=None):
     lookup=TemplateLookup(directories=settings.MAKO_TEMPLATE_DIRS)
@@ -50,7 +56,7 @@ def get_template_from_string(source, origin=None, name=None):
     # TBD
     try:
         real_template=Template(source, lookup=lookup)
-        return MakoTemplate(real_template)
+        return MakoTemplate(real_template, origin)
     except MakoException, me:
         if hasattr(me, 'source'):
             raise(MakoExceptionWrapper(me, origin))
