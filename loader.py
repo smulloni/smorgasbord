@@ -29,12 +29,12 @@ def get_template_from_string(language, source, origin=None, name=None):
     Returns a compiled Template object for the given template language
     and source code.
     """
-    print "in get_template_from_string with language", language
+    # print "in get_template_from_string with language", language
     if language=='django':
         return _original_get_template_from_string(source, origin, name)
 
     loader=_get_loader(language)
-    print "have loader %s" % loader
+    # print "have loader %s" % loader
     try:
         return loader.get_template_from_string(source, origin, name)
     except:
@@ -55,21 +55,21 @@ def get_template(template_name):
     languages=getattr(settings, 'TEMPLATE_LANGUAGES', None)
     if languages is None:
         return _original_get_template(template_name)
-    print "looking for template %s ..." % template_name
     for lang in languages:
-        print "checking language", lang
-        prefix="%s_" % lang.upper() if lang!='django' else ''
-        confvar='%sTEMPLATE_DIRS' % prefix
-        dirs=getattr(settings, confvar, ())
+        if lang=='django':
+            dirs=None
+        else:
+            prefix="%s_" % lang.upper() 
+            confvar='%sTEMPLATE_DIRS' % prefix
+            dirs=getattr(settings, confvar, ())
 
-        if not dirs:
-            warnings.warn("no directories defined for template language %r.  Please define the configuration setting %r." % (lang, confvar))
-            continue
+            if not dirs:
+                warnings.warn("no directories defined for template language %r.  Please define the configuration setting %r." % (lang, confvar))
+                continue
         try:
             source, origin=find_template_source(template_name, dirs)
         except TemplateDoesNotExist:
             continue
-
         return get_template_from_string(lang, source, origin, template_name)
 
     raise TemplateDoesNotExist, template_name
