@@ -15,11 +15,14 @@ class Jinja2Template(object):
         return self.template_obj.render(context_to_dict(context))
 
 def get_template_from_string(source, origin=None, name=None):
-    
-    loader=jinja2.FileSystemLoader(settings.JINJA2_TEMPLATE_DIRS)
-    # other settings from configuration ...
-    # TBD
-    environment=jinja2.Environment(loader=loader)
+
+    opts=getattr(settings, 'JINJA2_TEMPLATE_OPTS', {})
+    if opts:
+        opts=opts.copy()
+        if not 'loader' in opts:
+            opts['loader']=jinja2.FileSystemLoader(settings.JINJA2_TEMPLATE_DIRS)
+
+    environment=jinja2.Environment(**opts)
     template=environment.from_string(source)
     template.name=name
     return Jinja2Template(template)
