@@ -51,15 +51,18 @@ class MakoTemplate(object):
                 raise me
 
 def _get_lookup():
-    opts=getattr(settings, 'MAKO_TEMPLATE_OPTS', {})
+    opts = getattr(settings, 'MAKO_TEMPLATE_OPTS', {})
     return TemplateLookup(directories=settings.MAKO_TEMPLATE_DIRS, **opts)    
 
+_lookup = None
 def get_template_from_string(source, origin=None, name=None):
-    lookup=_get_lookup()
+    global _lookup
+    if _lookup is None:
+        _lookup = _get_lookup()
     try:
         # this potentially does a re-read, but also means that caching
         # is possible, so that's OK.
-        real_template=lookup.get_template(name)
+        real_template = _lookup.get_template(name)
 
         return MakoTemplate(real_template, origin)
     except MakoException, me:
